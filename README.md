@@ -204,7 +204,7 @@ dynamodb:
     write_capacity: 2
 ```
 
-5. **EventBridge Groups**.
+6. **EventBridge Groups**.
 
 Used to create multiple Eventbridge Groups
 ```yaml
