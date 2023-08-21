@@ -27,22 +27,18 @@ PolymerBase is a member of the Polymer framework family, designed to empower dev
 
 
 ## Configuration
-
 Please refer to the example lambda configuration file for additional information:
-[Example Configuration File](.polymer/lambda_config/example.{stage}.env.yml)
+[Example Configuration File](.polymer/lambda_config/main/dev.env.json)
 
 
 Configuration within PolymerBase consists of three key aspects:
 
 1. Resource Configuration: This involves the setup and customization of the resources that the Backend Stack deploys, e.g. API Gateway, Lambda.
 
-2. Application Configuration: Variables used in your application. Consists of parameters such as Cognito user and identity pool IDs, Apollo Client configuration, and S3 data bucket name
+2. Lambda Configuration: Configuration for Lambda. Consists of parameters such as VPC Configuration, environment variables, IAM.
 
-3. Content Configuration: Customize the title, description, and links within the authentication pages like signup, login, and forgot password. Modify this configuration in the .polymer/content/auth.content.yml file. 
+Configuration is stored in YAML files, specific to CI/CD staging environments. Lambda configuration files should follow the format {stage}.env.json (e.g., dev.env.json for development).
 
-Configuration is stored in YAML files, specific to CI/CD staging environments. General configuration files are located in .polymer/.config and should follow the format {stage}.env.yml (e.g., dev.env.yml for development).
-
-Gatsby configuration files are found in .polymer/.gatsbyconfig folder, used to configure environment variables during bundling (gatsby build) or local development (gatsby develop). It should follow the format {stage}.env.yml (e.g., development.env.yml for development). An example usage: GATSBY_APOLLO_URI = http://localhost:4000
 
 ## Integrations
 
