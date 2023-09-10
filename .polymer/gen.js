@@ -126,13 +126,11 @@ if (require.main === module) {
         const stream = fs.readFileSync('.polymer/infrastructure.yml', 'utf8');
         const config = yaml.load(stream);
 
-        const applicationName = config.application_name;
-        const fileConfig = config.schema_files;
+        const fileConfig = config.exports;
         const appDynamodb = appDynamodbConfig(config.dynamodb, applicationName);
         const appGraphql = appGraphqlSchema(config.dynamodb);
 
         dumpJson(fileConfig.app_config_output, {
-            application_name: applicationName,
             dynamodb: appDynamodb,
             s3: config.s3
         });

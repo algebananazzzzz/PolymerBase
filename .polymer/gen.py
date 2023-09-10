@@ -28,7 +28,6 @@ def app_dynamodb_config(config):
             except KeyError:
                 pass
         schema = clean_index_schema(schema)
-        schema["table_name"] = f"{key}-{application_name}"
 
     return crud_config
 
@@ -119,11 +118,10 @@ if __name__ == "__main__":
         except yaml.YAMLError as exc:
             raise exc
 
-    application_name = config["application_name"]
-    file_config = config["schema_files"]
+    file_config = config["exports"]
     app_dynamodb = app_dynamodb_config(config["dynamodb"])
     app_graphql = app_graphql_schema(config["dynamodb"])
 
     dump_json(file_config["app_config_output"],
-              {"application_name": application_name, "dynamodb": app_dynamodb, "s3": config["s3"]})
+              {"dynamodb": app_dynamodb, "s3": config["s3"]})
     dump_graphql_schema(file_config["graphql_schema_output"], app_graphql)

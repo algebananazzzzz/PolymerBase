@@ -5,15 +5,16 @@ provider "aws" {
 }
 
 locals {
-  general_config       = yamldecode(file(format("${path.root}/%s", var.infrastructure_config_filename)))
-  application_name     = local.general_config.application_name
-  dynamodb_config      = lookup(local.general_config, "dynamodb", {})
-  cognito_config       = lookup(local.general_config, "cognito", {})
-  lambda_config        = lookup(local.general_config, "lambda", {})
-  api_config           = lookup(local.general_config, "api_lambda_integration", {})
-  s3_config            = lookup(local.general_config, "s3", {})
-  schedule_groups      = lookup(local.general_config, "eventbridge_schedule_group", [])
-  lambda_function_name = format("%sfunction-%s", local.application_name, var.application_stage)
+  general_config              = yamldecode(file(format("${path.root}/.polymer/.config/%s.infrastructure.yml", var.application_stage)))
+  dynamodb_config             = lookup(local.general_config, "dynamodb", {})
+  iam_config                  = lookup(local.general_config, "iam", {})
+  cognito_config              = lookup(local.general_config, "cognito", {})
+  cognito_userpool_config     = lookup(local.cognito_config, "user_pool", {})
+  cognito_identitypool_config = lookup(local.cognito_config, "identity_pool", {})
+  lambda_config               = lookup(local.general_config, "lambda", {})
+  api_config                  = lookup(local.general_config, "api_lambda_integration", {})
+  s3_config                   = lookup(local.general_config, "s3", {})
+  lambda_function_name        = format("%sfunction-%s", var.application_name, var.application_stage)
 }
 
 module "iam" {
@@ -22,15 +23,22 @@ module "iam" {
   configuration = each.value
 }
 
-module "cognito" {
-  count                = length(local.cognito_config) != 0 ? 1 : 0
-  source               = "./.polymer/.tf_modules/cognito"
-  application_name     = local.application_name
-  pool_name            = format("%s%s-pool", local.application_name, var.application_stage)
-  client_name          = format("%s%s-client", local.application_name, var.application_stage)
-  usergroups           = contains(keys(local.cognito_config), "usergroups") ? toset(local.cognito_config.usergroups) : []
-  custom_attributes    = contains(keys(local.cognito_config), "custom_attributes") ? local.cognito_config.custom_attributes : {}
-  identity_pool_config = contains(keys(local.cognito_config), "identity_pool") ? local.cognito_config.identity_pool : null
+module "cognito_user_pool" {
+  count             = length(local.cognito_userpool_config) != 0 ? 1 : 0
+  source            = "./.polymer/.tf_modules/cognito_userpool"
+  application_name  = var.application_name
+  pool_name         = format("%s%s-pool", var.application_name, var.application_stage)
+  client_name       = format("%s%s-client", var.application_name, var.application_stage)
+  usergroups        = contains(keys(local.cognito_userpool_config), "usergroups") ? toset(local.cognito_userpool_config.usergroups) : []
+  custom_attributes = contains(keys(local.cognito_userpool_config), "custom_attributes") ? local.cognito_userpool_config.custom_attributes : {}
+}
+
+module "cognito_identity_pool" {
+  count                   = length(local.cognito_identitypool_config) != 0 ? 1 : 0
+  source                  = "./.polymer/.tf_modules/cognito_identitypool"
+  identity_pool_name      = local.cognito_identitypool_config.name
+  user_pool_client_id     = module.cognito_user_pool[0].user_pool_client_id
+  user_pool_provider_name = module.cognito_user_pool[0].user_pool_provider_name
   identity_pool_authenticated_policy = {
     "s3Permissions" : {
       "effect" : "Allow",
@@ -85,7 +93,7 @@ module "dynamodb" {
 module "lambda" {
   for_each             = local.lambda_config
   source               = "./.polymer/.tf_modules/lambda"
-  application_name     = local.application_name
+  application_name     = var.application_name
   application_stage    = var.application_stage
   lambda_function_name = format(each.value.function_name, var.application_stage)
   lambda_alias_name    = upper(var.application_stage)
@@ -113,7 +121,7 @@ module "codedeploy" {
 module "api" {
   for_each             = local.api_config
   source               = "./.polymer/.tf_modules/api"
-  api_gateway_name     = format("%s%s-api", local.application_name, var.application_stage)
+  api_gateway_name     = format("%s%s-api", var.application_name, var.application_stage)
   lambda_function_name = module.lambda[each.key].function_name
   lambda_alias_name    = upper(var.application_stage)
   application_stage    = var.application_stage
@@ -124,9 +132,4 @@ module "api" {
   depends_on = [
     module.lambda
   ]
-}
-
-resource "aws_scheduler_schedule_group" "schedules" {
-  for_each = toset(local.schedule_groups)
-  name     = each.key
 }

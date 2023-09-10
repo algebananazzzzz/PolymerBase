@@ -1,0 +1,17 @@
+type User {
+    name: String
+    email: String
+    id: ID!
+    posts: [Post]
+}
+
+type Post {
+    labels: [Float]
+    likes: Float
+    name: String
+    text: String
+    userId: ID!
+    id: ID!
+    date: ID!
+}
+

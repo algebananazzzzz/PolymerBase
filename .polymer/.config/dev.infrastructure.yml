@@ -1,0 +1,96 @@
+exports: 
+# Configures the location to write JSON and GraphQL Schema file representing
+# dynamodb and s3 infrastructure, when gen.py or gen.js is executed
+  app_config_output: api/src/app_config.json # see example/api/src/app_config.json
+  graphql_schema_output: api/src/schema/models.graphql # see example/api/src/schema/models.graphql
+
+s3:
+# Configures s3 buckets to be provisioned, and its alias to be used in `app_config_output`
+  data_bucket:
+    name: my-data-bucket
+  another_bucket:
+    name: my-another-bucket
+
+lambda:
+# Configures lambda functions to be provisioned
+  api:
+    function_name: GraphQLApi-%s-function # %s will be replaced by stage e.g. dev
+    basedir: api/dist # location of webpack bundled production files
+    envfile_basedir: .polymer/api_config 
+  # node_handler:
+  #   function_name: NodeHandler-%s-function # %s will be replaced by stage e.g. dev
+  #   basedir: node_handler/dist # location of webpack bundled production files
+  #   envfile_basedir: .polymer/handler_config 
+  # python_handler:
+  #   function_name: PolymerHandler-%s-function # %s will be replaced by stage e.g. dev
+  #   basedir: python_handler/deployment # location of webpack bundled production files
+  #   envfile_basedir: .polymer/py_handler_config 
+  # Add more if required
+
+api_lambda_integration:
+# Specifies which Lambda functions to attach an API Gateway integration to
+  api: # Must use alias specified in lambda section
+    cors_configuration:
+    # Specifies CORS configuration
+      allow_origins: 
+        - "*"
+      allow_methods: 
+        - OPTIONS
+        - GET
+        - POST
+      allow_headers: 
+        - "*"
+      expose_headers: 
+        - "*"
+      max_age: 300
+    cors_handler_name: cors-preflight-handler # Optional, specify a Lambda function name to handle OPTIONS method
+
+cognito:
+# Specifies configuration for provisioning Cognito Identity and User Pools
+  user_pool:
+    usergroups:
+      - admin
+      - user
+    custom_attributes:
+      labels:
+        type: S
+        min_length: 0
+        max_length: 2048
+  identity_pool:
+    name: ExampleIdentityPool
+dynamodb:
+  user:
+    table_name: users-PolymerBase
+    key_attributes:
+      id: S
+    attributes:
+      name: S
+      email: S
+    hash_key: id
+    read_capacity: 2
+    write_capacity: 2
+    child: post # used for defining GraphQL models i.e. field of [Posts] within type Users
+  post:
+    table_name: posts-ProjectBalls
+    key_attributes:
+      id: S
+      userId: S
+      date: S
+    attributes:
+      labels: NS
+      likes: N
+      name: S
+      text: S
+    hash_key: userId
+    range_key: id
+    global_secondary_index:
+      date-id:
+        hash_key: date
+        range_key: id
+        write_capacity: 2
+        read_capacity: 2
+        projection_type: "ALL"
+    read_capacity: 2
+    write_capacity: 2
+eventbridge_schedule_group:
+  - AnelaBotScheduler

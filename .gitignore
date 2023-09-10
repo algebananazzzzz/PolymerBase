@@ -3,15 +3,17 @@
 **/package-lock.json
 
 # App specific stuff 
-app/tmp/
-app/test
-app/src/index.js
-app/src/serverargs.js
-app/src/app_config.json
+**/tmp/
+**/test
+**/src/index.js
+**/src/serverargs.js
+**/src/app_config.json
+!example/**/index.js
+!example/**/app_config.js
 
 # Lambda upload zip files and dist/ dir
 upload/
-app/dist/
+**/dist/
 
 # Local .terraform directories
 **/.terraform/*
