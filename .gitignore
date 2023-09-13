@@ -5,10 +5,8 @@
 # App specific stuff 
 **/tmp/
 **/test
-**/src/index.js
 **/src/serverargs.js
 **/src/app_config.json
-!example/**/index.js
 !example/**/app_config.js
 
 # Lambda upload zip files and dist/ dir

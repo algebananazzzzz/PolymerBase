@@ -1,216 +1,177 @@
 # PolymerBase
 
-PolymerBase is a Framework dedicated to empower Backend development for Full-Stack Applications. It simplifies the provisioning of backend Serverless AWS resources using Terraform with CI/CD pipelines. It implements a unified source of truth within YAML configuration files for provisioning infrastructure and application configuration.
+PolymerBase is part of the Polymer framework, a DevOps framework created to provide developers with a framework empowering them to concentrate on what they do best – writing code and developing their applications. This is achieved through these steps:
+
+1. Simplify the configuration process by utilizing a single concise "Source-of-Truth" in the `stage.infrastructure.yml` files.
+2. Establish robust CI/CD pipelines with GitHub Actions for seamless, automated deployments.
+3. Minimize need for constant maintenance by provisioning Serverless AWS resources.
+
+
+## Templates
+Each template is designed with distinct integrations to fulfill specific purposes:
+
+1. [PolymerBase repository](https://github.com/algebananazzzzz/PolymerBase) - for developing Backend resources e.g. GraphQL APIs and Cognito Pools
+3. [PolymerFront repository](https://github.com/algebananazzzzz/PolymerFront) - for creating React applications with GraphQL and Amplify integrations
+4. [PolymerFront-lite repository](https://github.com/algebananazzzzz/PolymerFront-lite) - lite version of PolymerFront
+
+I highly recommend viewing [my blog](https://algebananazzzzz.com/blog/polymer) for a more comprehensive guide.
 
 
 ## Table of Contents
 
 - [About](#about)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
 - [Configuration](#configuration)
-- [Integrations](#integrations)
-- [Resources](#resources)
-- [Installation](#installation)
+  - [Resource Configuration](#resource-configuration)
+  - [Lambda Configuration](#lambda-configuration)
+- [Usage](#usage)
+  - [Developing GraphQL APIs](#developing-graphql-apis-using-apollo-server)
 - [Deployment](#deployment)
+  - [Using GitHub Actions](#using-gitHub-actions-(recommended))
+  - [Using Terraform Locally](#using-terraform-locally)
 - [License](#license)
 - [Contact](#contact)
 
 ## About
 
-PolymerBase is a member of the Polymer framework family, designed to empower developers in building sophisticated applications. This framework utilizes Terraform for provisioning Serverless resources within the AWS Cloud Infrastructure, while also facilitating the establishment of streamlined CI/CD pipelines through GitHub Actions. 
+PolymerBase specialises in provisioning Backend resources like Lambda with API Gateway Integration (optional), DynamoDB, S3, Cognito, suitable for Fullstack Development. Additionally, it includes features to further enable creating GraphQL APIs using Apollo-Server.
 
-# Polymer Framework
+## Getting Started
 
-1. [PolymerBase repository](https://github.com/algebananazzzzz/PolymerBase)
-2. [PolymerBase-lite repository](https://github.com/algebananazzzzz/PolymerBase-lite)
-3. [PolymerFront repository](https://github.com/algebananazzzzz/PolymerFront)
-4. [PolymerFront-lite repository](https://github.com/algebananazzzzz/PolymerFront-lite)
+### Prerequisites
 
+This project does not have any mandatory prerequisites for basic usage. You can get started without any specific requirements.
 
-## Configuration
-Please refer to the example lambda configuration file for additional information:
-[Example Configuration File](.polymer/lambda_config/main/dev.env.json)
+However, certain prerequisites are required if you choose to perform the following actions:
 
+1. **Develop Apollo-Server Lambda APIs**: To run Apollo-Server locally during development phase, you must have the following tools installed:
 
-Configuration within PolymerBase consists of three key aspects:
-
-1. Resource Configuration: This involves the setup and customization of the resources that the Backend Stack deploys, e.g. API Gateway, Lambda.
-
-2. Lambda Configuration: Configuration for Lambda. Consists of parameters such as VPC Configuration, environment variables, IAM.
-
-Configuration is stored in YAML files, specific to CI/CD staging environments. Lambda configuration files should follow the format {stage}.env.json (e.g., dev.env.json for development).
+  - **Node.js**: Download from [the official Node.js website](https://nodejs.org/). We recommend using Node.js version 14.17.0 or higher.
+  - **NPM (Node Package Manager)**: NPM is usually included with Node.js installation. If NPM is not installed, you can download it from the [official npm website](https://www.npmjs.com/).
 
 
-## Integrations
+2. **Provision Resources Locally instead**: To provision resources locally using Terraform instead of through GitHub Actions, you must have Terraform installed:
+  
+  - **Download Terraform**: You can download Terraform from [the official Terraform website](https://www.terraform.io/). We recommend using Terraform version 0.14.0 or higher.
 
-1. PolymerBase utilises the **Apollo framework** to create **Graphql** servers for production. Learn more about [Apollo](https://www.apollographql.com). 
 
-To create application configurations and graphql schema for use within the application utilizing the configuration details of DynamoDB tables and the S3 data bucket provided in the "infrastructure.yml" file:
+### Installation
+
+1. **Clone the Repository**:
+
+Clone the repository to your local machine using the following command:
+
 ```shell
-python3 .polymer/gen.py
+git clone https://github.com/algebananazzzzz/PolymerBase.git
 ```
 
-Configure the location of the files in infrastructure.yml
+2. **For Local Development (Optional)**
+
+To run Apollo-Server locally during development phase, follow these additional steps to download the required Node dependencies:
+
+```shell
+cd api/
+npm install
+```
+
+If you decide not to develop Apollo-Server APIs, you can remove the api/ directory:
+
+```shell
+rm -r api/
+```
+
+## Configuration
+
+### Resource Configuration
+
+Resource configuration includes settings for provisioning AWS Resources such as Lambda functions, API Gateway, Cognito, and DynamoDB. These configurations are stored in YAML files specific to CI/CD staging environments. 
+
+The configuration files must follow the naming convention `{stage}.infrastructure.yml`:
+
+```
+|-- .polymer
+|   |-- .config
+|   |   |-- dev.infrastructure.yml # for dev stage
+|   |   |-- test.infrastructure.yml
+|   |   |-- prod.infrastructure.yml
+|   |   |-- example.infrastructure.yml # example configuration file
+|-- other files and directories
+```
+
+Please view the [example configuration file](.polymer/.config/example.infrastructure.yml) to understand how to configure configuration files. The comments within the file provide detailed explanations of what each field configures.
+
+### Lambda Configuration
+
+Lambda Configuration encompasses various options such as Lambda Environment Variables, VPC settings, IAM Role configurations, Layers, and the runtime environment. To organize these configurations, create and specify a directory for each individual function using the "envfile_basedir" field in your Resource Configuration:
+
 ```yaml
-schema_files:
+lambda:
+  api:
+    function_name: GraphQLApi-%s-function
+    basedir: api/dist
+    envfile_basedir: .polymer/api_config # Specify this field
+```
+
+You can then store Lambda Configuration files adhering to the format {stage}.env.yml in the directory:
+
+```
+|-- .polymer
+|   |-- api_config # configuration specific to a Lambda function
+|   |   |-- dev.lambda.json # for dev stage
+|   |   |-- test.lambda.json
+|   |   |-- prod.lambda.json
+|   |   |-- example.lambda.json # example configuration file
+|-- other files and directories
+```
+
+Please view the [example configuration file](.polymer/api_config/example.lambda.json) to understand how to configure Lambda configuration files. The comments within the file provide detailed explanations of what each field configures.
+
+
+## Usage
+
+### Developing GraphQL APIs using Apollo-Server
+
+With this framework, you can effortlessly develop **GraphQL APIs** using the **Apollo framework**, seamlessly integrating the Schema and Configuration with DynamoDB and S3 resource configurations. Learn more about [Apollo](https://www.apollographql.com). 
+
+#### Export JSON and GraphQL Schema
+To export a JSON file and GraphQL Schema with models representing the provisioned DynamoDB tables and S3 buckets for use within your application, follow these steps:
+
+1. Configure the Export Location
+
+First, configure the location where the exported files will be stored by specifying the paths in your `infrastructure.yml` configuration file:
+
+```yaml
+exports:
   app_config_output: app/src/app_config.json
   graphql_schema_output: app/src/schema/models.graphql
 ```
 
-An example of generated application configuration
-```json
-{
-    "application_name": "Polymer",
-    "dynamodb": {
-        "user": {
-            "table_name": "users-Polymer",
-            "key_attributes": {
-                "id": "S",
-                "userId": "S"
-            },
-            "attributes": {
-                "name": "S",
-                "description": "S"
-            },
-            "hash_key": "userId",
-            "range_key": "id",
-            "child": "posts"
-        },
-    },
-    "s3": {
-        "data_bucket": {
-            "name": "polymer-s3-data"
-        }
-    }
-}
-```
+2. Run the Export Script
 
-2. It integrates with the **[WebPack]()** framework for efficient bundling for production. 
-
-GitHub Actions will automatically generate production bundle for deployment:
 ```shell
-cd app
-npm run build
+# Set your desired STAGE (e.g., dev, test, prod)
+export STAGE=dev
+
+# Run the export script
+python3 .polymer/gen.py
 ```
 
-## Resources
+#### Develop Apollo-Server Locally
 
-Here are the resources that PolymerBase will deploy if specified, along with instructions on how to configure them:
+To run Apollo Server locally during development, follow these steps:
 
-1. **S3 Data Bucket** to store Application Content
-
-Under s3, you can choose the name for S3 bucket to be provisioned
-```yaml
-s3:
-  data_bucket:
-    name: polymerbase-data
+```shell
+cd api/
+node src/index.js
 ```
 
-2. **Lambda functions** for executing compute operations. Polymer will automatically provision CodeDeploy resources for All-At-Once deployment.
+The template includes a [starter example](api/) for your convenience. For a more advanced API integrated with Cognito User Pool and DynamoDB, please refer to the [example here](example/api/).
 
-Under lambda, you can specify multiple functions, and where to source its production files from
-```yaml
-lambda:
-  polymerbase:
-    function_name: PolymerBase-%s-function # %s will be replaced by stage e.g. dev
-    basedir: app/dist
-    envfile_basedir: .polymer/lambda_config 
-  polymerhandler:
-    function_name: PolymerHandler-%s-function # %s will be replaced by stage e.g. dev
-    basedir: app/handler
-    envfile_basedir: .polymer/lambda_config 
-```
+#### Modify server.js
 
-3. **API Gateway Integration** for exposing API endpoints.
-
-Under api_lambda_integration, you can which lambda functions require API Gateway Integrations
-```yaml
-api_lambda_integration:
-  polymerbase:
-    cors_configuration: 
-      allow_origins: 
-        - "*"
-      allow_methods: 
-        - OPTIONS
-        - GET
-        - POST
-      allow_headers: 
-        - "*"
-      expose_headers: 
-        - "*"
-      max_age: 300
-    cors_handler_name: cors-preflight-handler
-```
-
-
-4. **Cognito Identity and User Pools**.
-
-Under cognito, you can configure attributes for your Cognito Identity and User Pools. Currently, the identity pool is set up with an authenticated role, enabling access to the provisioned data bucket. However, ongoing efforts are being made to introduce a customized IAM role, enhancing flexibility and control in this aspect.
-```yaml
-cognito:
-  usergroups:
-    - admin
-    - user
-  cognito_custom_css: null
-  custom_attributes:
-    labels:
-      type: S
-      min_length: 0
-      max_length: 2048
-  identity_pool:
-    name: ExampleIdentityPool
-```
-
-
-5. **DynamoDB Tables**.
-
-Under dynamodb, you can specify multiple tables. The **attributes** attribute is used to specify non-key attributes e.g. name, required in `gen.py` to generate application configuration and schema definition.
-```yaml
-dynamodb:
-  users:
-    table_name: users-PolymerBase
-    key_attributes:
-      id: S
-      userId: S
-    attributes:
-      key: S
-      name: S
-      description: S
-    hash_key: userId
-    range_key: id
-    read_capacity: 2
-    write_capacity: 2
-    child: posts # used for defining GraphQL models i.e. field of [Posts] within type Users
-  posts:
-    table_name: posts-ProjectBalls
-    key_attributes:
-      id: S
-      postId: S
-      userId: S
-    attributes:
-      labels: NS
-      likes: N
-      name: S
-      text: S
-    hash_key: userId
-    range_key: id
-    global_secondary_index:
-      postId-id:
-        hash_key: postId
-        range_key: id
-        write_capacity: 2
-        read_capacity: 2
-        projection_type: "ALL"
-    read_capacity: 2
-    write_capacity: 2
-```
-
-6. **EventBridge Groups**.
-
-Used to create multiple Eventbridge Groups
-```yaml
-eventbridge_schedule_group:
-  - AnelaBotScheduler
-```
+For production, Webpack will bundle your server code from the `server.js` file, optimizing it for deployment. To prepare your Apollo Server for production, follow the documentation for [`startServerAndCreateLambdaHandler`](https://www.apollographql.com/docs/apollo-server/deployment/lambda/) to create a Lambda handler for serverless deployment.
 
 
 ## Installation
@@ -222,6 +183,7 @@ git clone https://github.com/algebananazzzzz/PolymerBase
 
 ## Deployment
 
+### Using GitHub Actions (Recommended)
 
 1. **Create a GitHub Repository:**
 Start by creating a GitHub repository. After that, follow these steps to initialize Git and switch to the `dev` branch:
@@ -258,8 +220,76 @@ For secure and streamline access to AWS and Terraform Cloud, follow these steps 
 git push --set-upstream origin dev
 ```
 
-With GitHub Actions in place, this push will automatically trigger Terraform Cloud to provision the necessary resources.
+With GitHub Actions in place, this push will automatically trigger the following processes:
 
+- Webpack will bundle your Node.js code, optimizing it for production deployment.
+
+- If a workspace for your organization doesn't already exist, Terraform Cloud will create one.Terraform Cloud will then be triggered to provision the necessary resources according to your infrastructure configuration. 
+
+
+4. **Staging**
+
+After a successful deployment of the dev branch, you can extend the same workflow to deploy your application to other stages, such as **test** or **production**. Follow these steps for each stage:
+
+- Create a new branch corresponding to the stage you want to deploy (e.g., `test`, `prod`).
+- Merge the `dev` branch into the newly created stage branch. 
+
+This push to the stage branch will automatically trigger GitHub Actions to provision resources for the specified stage. Repeat these steps for each stage as needed, allowing you to deploy your application to multiple environments seamlessly.
+
+
+### Using Terraform Locally
+
+If you prefer to use Terraform locally and avoid pushing code to GitHub, you can follow these steps. This approach offers several benefits, including greater control and flexibility over your infrastructure provisioning.
+
+1. **Check Terraform Version**:
+
+    After downloading Terraform, verify its version to ensure it's correctly installed:
+
+     ```shell
+     terraform -v
+     ```
+     
+2. **Update terraform.tf Configuration**:
+
+Modify the `terraform.tf` configuration file to specify the required Terraform version under the `required_version` block, and comment out the "cloud" block:
+
+```hcl
+terraform {
+  required_version = "~>1.5.0"
+
+    # cloud {
+    #   workspaces {
+    #     tags = ["github-actions"]
+    #   }
+    # }
+
+  # Other configuration settings...
+}
+```
+
+3. **Specify Staging Environment**:
+
+To define the staging environment you intend to work with, set the `STAGE` variable:
+
+```shell
+export STAGE=dev
+```
+
+4. **Bundle Node.js files with Webpack**
+To bundle your Node.js files using Webpack, optimizing it for production deployment:
+
+```shell
+cd api/
+npm run build
+```
+
+5. **Terraform Init, Plan and Apply**:
+
+```shell
+terraform init
+terraform plan
+terraform apply --auto-approve
+```
 
 ## License
 

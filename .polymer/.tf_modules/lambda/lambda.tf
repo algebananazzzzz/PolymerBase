@@ -5,7 +5,7 @@ data "archive_file" "lambda" {
 }
 
 locals {
-  envfile_source  = format("${var.envfile_basedir}/${var.application_stage}.env.json")
+  envfile_source  = format("${var.envfile_basedir}/${var.application_stage}.lambda.json")
   decoded_envfile = jsondecode(file(local.envfile_source))
 }
 

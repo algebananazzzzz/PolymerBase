@@ -1,37 +1,43 @@
 exports: 
-# Configures the location to write JSON and GraphQL Schema file representing
-# dynamodb and s3 infrastructure, when gen.py or gen.js is executed
-  app_config_output: api/src/app_config.json # see example/api/src/app_config.json
-  graphql_schema_output: api/src/schema/models.graphql # see example/api/src/schema/models.graphql
+# Configuration for Exporting JSON and GraphQL Schema Files for developing Apollo-Server APIs
+  # Specify the location to write the JSON file representing DynamoDB and S3 infrastructure
+  app_config_output: api/src/app_config.json # See example/api/src/app_config.json
+  # Specify the location to write the GraphQL Schema file representing DynamoDB infrastructure
+  graphql_schema_output: api/src/schema/models.graphql # See example/api/src/schema/models.graphql
 
 s3:
-# Configures s3 buckets to be provisioned, and its alias to be used in `app_config_output`
+# Configuration for S3 Buckets to be Provisioned and Their Aliases
   data_bucket:
+    # Specify the name of the data bucket
     name: my-data-bucket
   another_bucket:
+    # Specify the name of another bucket
     name: my-another-bucket
 
 lambda:
-# Configures lambda functions to be provisioned
-  api:
+# Configuration for Lambda Functions to be Provisioned
+  api: # API Lambda Function Configuration
+    # Specify the function name for the API Lambda function (with stage placeholder)
     function_name: GraphQLApi-%s-function # %s will be replaced by stage e.g. dev
-    basedir: api/dist # location of webpack bundled production files
-    envfile_basedir: .polymer/api_config 
-  node_handler:
-    function_name: NodeHandler-%s-function # %s will be replaced by stage e.g. dev
-    basedir: node_handler/dist # location of webpack bundled production files
-    envfile_basedir: .polymer/handler_config 
-  python_handler:
-    function_name: PolymerHandler-%s-function # %s will be replaced by stage e.g. dev
-    basedir: python_handler/deployment # location of webpack bundled production files
-    envfile_basedir: .polymer/py_handler_config 
-  # Add more if required
+    # Specify the directory containing Webpack bundled production files
+    basedir: api/dist # Location of webpack bundled production files
+    # Specify the directory for Lambda environment configuration files
+    envfile_basedir: .polymer/api_config
+  node_handler: # Example of a Node Handler Lambda Function Configuration
+    function_name: NodeHandler-%s-function
+    basedir: node_handler/dist
+    envfile_basedir: .polymer/handler_config
+  python_handler: # Example of a Python Handler Lambda Function Configuration
+    function_name: PolymerHandler-%s-function
+    basedir: python_handler/deployment
+    envfile_basedir: .polymer/py_handler_config
+  # Add more configurations if required for additional Lambda functions
 
 api_lambda_integration:
-# Specifies which Lambda functions to attach an API Gateway integration to
-  api: # Must use alias specified in lambda section
+# Configuration for Lambda Function Integration with API Gateway
+  api: # Specify the alias of the Lambda function to integrate with the API Gateway
     cors_configuration:
-    # Specifies CORS configuration
+    # Configure CORS (Cross-Origin Resource Sharing) settings
       allow_origins: 
         - "*"
       allow_methods: 
@@ -43,47 +49,66 @@ api_lambda_integration:
       expose_headers: 
         - "*"
       max_age: 300
-    cors_handler_name: cors-preflight-handler # Optional, specify a Lambda function name to handle OPTIONS method
+    # Optional: Specify a Lambda function name to handle OPTIONS method (CORS preflight handler)
+    cors_handler_name: cors-preflight-handler
 
 cognito:
 # Specifies configuration for provisioning Cognito Identity and User Pools
   user_pool:
+    # Define user groups
     usergroups:
       - admin
       - user
+    # Configure custom user attributes
     custom_attributes:
       labels:
         type: S
         min_length: 0
         max_length: 2048
+  # Configuration for Identity Pool
   identity_pool:
+    # Specify the name of the Identity Pool
     name: ExampleIdentityPool
 
 dynamodb:
+# Configuration for DynamoDB Tables
+  # User Table Configuration
   user:
+    # Specify the table name for the User Table
     table_name: users-PolymerBase
+    # Define key attributes
     key_attributes:
       id: S
+    # Define additional attributes
     attributes:
       name: S
       email: S
+    # Specify the hash key
     hash_key: id
+    # Configure read and write capacities
     read_capacity: 2
     write_capacity: 2
-    child: post # used for defining GraphQL models i.e. field of [Posts] within type Users
+    # Child table relationship for GraphQL models
+    child: post # Used for defining GraphQL models (i.e., field of [Posts] within type Users)
+  # Post Table Configuration
   post:
+    # Specify the table name for the Post Table
     table_name: posts-ProjectBalls
+    # Define key attributes
     key_attributes:
       id: S
       userId: S
       date: S
+    # Define additional attributes
     attributes:
       labels: NS
       likes: N
       name: S
       text: S
+    # Specify the hash key and range key
     hash_key: userId
     range_key: id
+    # Global Secondary Index Configuration
     global_secondary_index:
       date-id:
         hash_key: date
@@ -91,5 +116,6 @@ dynamodb:
         write_capacity: 2
         read_capacity: 2
         projection_type: "ALL"
+    # Configure read and write capacities
     read_capacity: 2
     write_capacity: 2
