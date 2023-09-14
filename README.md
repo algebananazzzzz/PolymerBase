@@ -2,7 +2,7 @@
 
 PolymerBase is part of the Polymer framework, a DevOps framework created to provide developers with a framework empowering them to concentrate on what they do best – writing code and developing their applications. This is achieved through these steps:
 
-1. Simplify the configuration process by utilizing a single concise "Source-of-Truth" in the `stage.infrastructure.yml` files.
+1. Simplify the configuration process in provisioning resources by utilizing a single concise "Source-of-Truth" in the `stage.infrastructure.yml` files.
 2. Establish robust CI/CD pipelines with GitHub Actions for seamless, automated deployments.
 3. Minimize need for constant maintenance by provisioning Serverless AWS resources.
 
